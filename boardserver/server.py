@@ -1,3 +1,4 @@
+import sys
 import random
 import ast
 import gevent, gevent.local, gevent.queue, gevent.server
@@ -11,6 +12,14 @@ class Server(object):
         self.server = None
         self.player_numbers = None
         self.players = None
+
+        self.addr = '127.0.0.1'
+        self.port = 4242
+        pos_args = sys.argv[1:]
+        if len(pos_args) > 0:
+            self.addr = pos_args[0]
+        if len(pos_args) > 1:
+            self.port = int(pos_args[1])
 
     def run(self):
         self.sender = {'player': self.send_player,
@@ -40,8 +49,8 @@ class Server(object):
             self.players[x].put(('update', (None, self.states[-1])))
         self.players[1].put(('action', ()))
 
-        self.server = gevent.server.StreamServer(
-            ('0.0.0.0', 4242), self.connection)
+        self.server = gevent.server.StreamServer((self.addr, self.port),
+                                                 self.connection)
         print "Starting server..."
         self.server.serve_forever()
 
