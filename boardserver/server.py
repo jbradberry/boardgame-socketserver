@@ -10,8 +10,18 @@ class Server(object):
         self.states = []
         self.local = gevent.local.local()
         self.server = None
-        self.player_numbers = None
-        self.players = None
+        # player message queues
+        self.players = dict((x, gevent.queue.Queue())
+                            for x in xrange(1, self.board.num_players+1))
+        # random player selection
+        self.player_numbers = gevent.queue.JoinableQueue()
+
+        self.sender = {'player': self.send_player,
+                       'update': self.send_update,
+                       'action': self.send_action,
+                       'winner': self.send_winner,
+                       'error': self.send_error,
+                       'illegal': self.send_illegal,}
 
         self.addr = '127.0.0.1'
         self.port = 4242
@@ -21,38 +31,38 @@ class Server(object):
         if len(pos_args) > 1:
             self.port = int(pos_args[1])
 
+    def game_reset(self):
+        while True:
+            # initialize the game state
+            del self.states[:]
+            self.states.append(self.board.start())
+
+            # update all players with the starting state and mark
+            # player 1 to move
+            for x in xrange(1, self.board.num_players+1):
+                self.players[x].put_nowait(('player', (x,)))
+                self.players[x].put_nowait(('update', (None, self.states[-1])))
+            self.players[1].put_nowait(('action', ()))
+
+            # randomize the player selection
+            players = range(1, self.board.num_players+1)
+            random.shuffle(players)
+            for p in players:
+                self.player_numbers.put_nowait(p)
+
+            # block until all players have terminated
+            self.player_numbers.join()
+
     def run(self):
-        self.sender = {'player': self.send_player,
-                       'update': self.send_update,
-                       'action': self.send_action,
-                       'winner': self.send_winner,
-                       'error': self.send_error,
-                       'illegal': self.send_illegal,}
-
-        # initialize the game state
-        self.states.append(self.board.start())
-
-        # randomize the player selection
-        players = range(1, self.board.num_players+1)
-        random.shuffle(players)
-        self.player_numbers = gevent.queue.Queue()
-        for p in players:
-            self.player_numbers.put_nowait(p)
-
-        # set up player message queues
-        self.players = dict((x, gevent.queue.Queue())
-                            for x in xrange(1, self.board.num_players+1))
-
-        # update all players with the starting state and mark player 1 to move
-        for x in xrange(1, self.board.num_players+1):
-            self.players[x].put(('player', (x,)))
-            self.players[x].put(('update', (None, self.states[-1])))
-        self.players[1].put(('action', ()))
-
+        game = gevent.spawn(self.game_reset)
         self.server = gevent.server.StreamServer((self.addr, self.port),
                                                  self.connection)
         print "Starting server..."
         self.server.serve_forever()
+
+        # FIXME: need a way of nicely shutting down.
+        # print "Stopping server..."
+        # self.server.stop()
 
     def connection(self, socket, address):
         self.local.socket = socket
@@ -60,8 +70,9 @@ class Server(object):
             self.send_decline()
             return
 
+        self.local.run = True
         self.local.player = self.player_numbers.get()
-        while True:
+        while self.local.run:
             action, args = self.players[self.local.player].get()
             self.sender[action](*args)
             if action == 'action':
@@ -69,6 +80,7 @@ class Server(object):
                 messages = message.rstrip().split('\r\n')
                 self.parse(messages[0]) # FIXME: support for multiple messages
                                         #        or out-of-band requests
+        self.player_numbers.task_done()
 
     def parse(self, msg):
         if msg.startswith('play '):
@@ -89,8 +101,6 @@ class Server(object):
         if winner:
             for x in xrange(1, self.board.num_players+1):
                 self.players[x].put(('winner', (winner,)))
-            print "Stopping server..."
-            self.server.stop()
         else:
             next_player = self.local.player % self.board.num_players + 1
             self.players[next_player].put(('action', ()))
@@ -119,4 +129,4 @@ class Server(object):
 
     def send_winner(self, winner):
         self.local.socket.sendall("winner {0}\r\n".format(winner))
-        raise gevent.GreenletExit
+        self.local.run = False
