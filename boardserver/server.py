@@ -102,7 +102,7 @@ class Server(object):
             for x in xrange(1, self.board.num_players+1):
                 self.players[x].put(('winner', (winner,)))
         else:
-            next_player = self.local.player % self.board.num_players + 1
+            next_player = self.board.next_player(self.states[-1])
             self.players[next_player].put(('action', ()))
 
     def send_player(self, player):
