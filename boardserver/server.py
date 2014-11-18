@@ -5,7 +5,7 @@ import gevent, gevent.local, gevent.queue, gevent.server
 
 
 class Server(object):
-    def __init__(self, board):
+    def __init__(self, board, addr=None, port=None):
         self.board = board
         self.states = []
         self.local = gevent.local.local()
@@ -23,13 +23,8 @@ class Server(object):
                        'error': self.send_error,
                        'illegal': self.send_illegal,}
 
-        self.addr = '127.0.0.1'
-        self.port = 4242
-        pos_args = sys.argv[1:]
-        if len(pos_args) > 0:
-            self.addr = pos_args[0]
-        if len(pos_args) > 1:
-            self.port = int(pos_args[1])
+        self.addr = addr if addr is not None else '127.0.0.1'
+        self.port = port if port is not None else 4242
 
     def game_reset(self):
         while True:
