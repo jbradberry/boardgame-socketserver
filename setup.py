@@ -8,6 +8,7 @@ setup(
     packages=['boardserver'],
     scripts=['bin/board-serve.py'],
     entry_points={'jrb_board.games': []},
+    install_requires=['gevent'],
     license='LICENSE',
     description="A generic board game socket server.",
 )
