@@ -84,11 +84,11 @@ class Server(object):
         self.players[self.local.player].put(('error', (msg,)))
 
     def handle_play(self, play):
-        if not self.board.is_legal(self.states[-1], play):
+        if not self.board.is_legal(self.states, play):
             self.players[self.local.player].put(('illegal', (play,)))
             return
 
-        self.states.append(self.board.play(self.states[-1], play))
+        self.states.append(self.board.next_state(self.states[-1], play))
         for x in xrange(1, self.board.num_players+1):
             self.players[x].put(('update', (play, self.states[-1])))
 
@@ -97,7 +97,7 @@ class Server(object):
             for x in xrange(1, self.board.num_players+1):
                 self.players[x].put(('winner', (winner,)))
         else:
-            next_player = self.board.next_player(self.states[-1])
+            next_player = self.board.current_player(self.states[-1])
             self.players[next_player].put(('action', ()))
 
     def send_player(self, player):
