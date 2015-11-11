@@ -35,7 +35,6 @@ class Server(object):
             # update all players with the starting state and mark
             # player 1 to move
             for x in xrange(1, self.board.num_players+1):
-                self.players[x].put_nowait(('player', (x,)))
                 self.players[x].put_nowait(('update', (None, self.states[-1])))
             self.players[1].put_nowait(('action', ()))
 
@@ -60,6 +59,7 @@ class Server(object):
         # self.server.stop()
 
     def connection(self, socket, address):
+        print "connection:", socket
         self.local.socket = socket
         if self.player_numbers.empty():
             self.send_decline()
@@ -67,14 +67,27 @@ class Server(object):
 
         self.local.run = True
         self.local.player = self.player_numbers.get()
+        self.sender['player'](self.local.player)
+
+        action, update = None, (None, self.states[-1])
         while self.local.run:
             action, args = self.players[self.local.player].get()
-            self.sender[action](*args)
-            if action == 'action':
-                message = socket.recv(4096)
-                messages = message.rstrip().split('\r\n')
-                self.parse(messages[0]) # FIXME: support for multiple messages
-                                        #        or out-of-band requests
+            try:
+                self.sender[action](*args)
+                if action == 'action':
+                    message = socket.recv(4096)
+                    messages = message.rstrip().split('\r\n')
+                    self.parse(messages[0]) # FIXME: support for multiple messages
+                                            #        or out-of-band requests
+                elif action == 'update':
+                    update = args
+            except Exception as e:
+                socket.close()
+                self.player_numbers.put_nowait(self.local.player)
+                self.players[self.local.player].put_nowait(('update', update))
+                if action == 'action':
+                    self.players[self.local.player].put_nowait(('action', ()))
+                self.local.run = False
         self.player_numbers.task_done()
 
     def parse(self, msg):
