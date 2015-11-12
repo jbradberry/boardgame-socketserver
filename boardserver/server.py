@@ -82,6 +82,7 @@ class Server(object):
                 elif action == 'update':
                     update = args
             except Exception as e:
+                print e
                 socket.close()
                 self.player_numbers.put_nowait(self.local.player)
                 self.players[self.local.player].put_nowait(('update', update))
