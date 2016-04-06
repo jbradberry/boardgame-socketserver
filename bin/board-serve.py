@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import sys
 from pkg_resources import iter_entry_points
 from boardserver import server
