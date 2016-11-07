@@ -19,7 +19,7 @@ class Server(object):
         self.sender = {'player': self.send_player,
                        'update': self.send_update,
                        'action': self.send_action,
-                       'winner': self.send_winner,
+                       'winners': self.send_winners,
                        'error': self.send_error,
                        'illegal': self.send_illegal,}
 
@@ -106,10 +106,10 @@ class Server(object):
         for x in xrange(1, self.board.num_players+1):
             self.players[x].put(('update', (play, self.states[-1])))
 
-        winner = self.board.winner(self.states)
-        if winner:
+        if self.board.is_ended(self.states):
+            winners = self.board.win_values(self.states)
             for x in xrange(1, self.board.num_players+1):
-                self.players[x].put(('winner', (winner,)))
+                self.players[x].put(('winners', (winners,)))
         else:
             next_player = self.board.current_player(self.states[-1])
             self.players[next_player].put(('action', ()))
@@ -136,6 +136,6 @@ class Server(object):
     def send_action(self):
         self.local.socket.sendall("action\r\n")
 
-    def send_winner(self, winner):
-        self.local.socket.sendall("winner {0}\r\n".format(winner))
+    def send_winners(self, winners):
+        self.local.socket.sendall("winners {0}\r\n".format(winners))
         self.local.run = False
