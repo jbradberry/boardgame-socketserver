@@ -30,7 +30,7 @@ class Server(object):
         while True:
             # initialize the game state
             del self.states[:]
-            self.states.append(self.board.start())
+            self.states.append(self.board.starting_state())
 
             # update all players with the starting state and mark
             # player 1 to move
