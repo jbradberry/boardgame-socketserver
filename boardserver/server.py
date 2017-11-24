@@ -79,7 +79,9 @@ class Server(object):
                     self.local.run = False
 
                 elif data.get('state', {}).get('player') == self.local.player:
-                    message = socket.recv(4096)
+                    message = ''
+                    while not message.endswith('\r\n'):
+                        message += socket.recv(4096)
                     messages = message.rstrip().split('\r\n')
                     self.parse(messages[0]) # FIXME: support for multiple messages
                                             #        or out-of-band requests
