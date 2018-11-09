@@ -28,7 +28,7 @@ class Server(object):
             self.states.append(state)
 
             # update all players with the starting state
-            state = self.board.unpack_state(state)
+            state = self.board.to_json_state(state)
             # board = self.board.get_description()
             for x in xrange(1, self.board.num_players+1):
                 self.players[x].put_nowait({
@@ -98,30 +98,31 @@ class Server(object):
             data = json.loads(msg)
             if data.get('type') != 'action':
                 raise Exception
-            self.handle_action(data.get('message'))
+            self.handle_action(data)
         except Exception:
             self.players[self.local.player].put({
                 'type': 'error', 'message': msg
             })
 
-    def handle_action(self, notation):
-        action = self.board.pack_action(notation)
+    def handle_action(self, data):
+        action = self.board.to_compact_action(data['message'])
         if not self.board.is_legal(self.states, action):
             self.players[self.local.player].put({
-                'type': 'illegal', 'message': notation
+                'type': 'illegal', 'message': data['message'],
             })
             return
 
         self.states.append(self.board.next_state(self.states[-1], action))
-        state = self.board.unpack_state(self.states[-1])
+        state = self.board.to_json_state(self.states[-1])
 
+        # TODO: provide a json object describing the board used
         data = {
             'type': 'update',
             'board': None,
             'state': state,
             'last_action': {
-                'player': state['previous_player'],
-                'notation': notation,
+                'player': self.board.previous_player(self.states[-1]),
+                'action': data['message'],
                 'sequence': len(self.states),
             },
         }
