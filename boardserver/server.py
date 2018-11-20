@@ -112,7 +112,7 @@ class Server(object):
             })
             return
 
-        self.states.append(self.board.next_state(self.states[-1], action))
+        self.states.append(self.board.next_state(self.states, action))
         state = self.board.to_json_state(self.states[-1])
 
         # TODO: provide a json object describing the board used
