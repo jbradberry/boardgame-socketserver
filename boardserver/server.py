@@ -106,7 +106,7 @@ class Server(object):
 
     def handle_action(self, data):
         action = self.board.to_compact_action(data['message'])
-        if not self.board.is_legal(self.states, action):
+        if not self.board.is_legal(self.states[-1], action):
             self.players[self.local.player].put({
                 'type': 'illegal', 'message': data['message'],
             })
@@ -126,9 +126,9 @@ class Server(object):
                 'sequence': len(self.states),
             },
         }
-        if self.board.is_ended(self.states):
-            data['winners'] = self.board.win_values(self.states)
-            data['points'] = self.board.points_values(self.states)
+        if self.board.is_ended(self.states[-1]):
+            data['winners'] = self.board.win_values(self.states[-1])
+            data['points'] = self.board.points_values(self.states[-1])
 
         for x in xrange(1, self.board.num_players+1):
             self.players[x].put(data)
