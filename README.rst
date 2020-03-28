@@ -13,9 +13,9 @@ Carlo Tree Search implementation `jbradberry/mcts
 Requirements
 ------------
 
-You need to have the following system packages installed:
-
-* Python >= 2.6
+* Python 2.7, 3.5+; PyPy is not supported by the server
+* gevent
+* six
 
 
 Getting Started

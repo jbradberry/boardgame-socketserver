@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import absolute_import
 import sys
 from pkg_resources import iter_entry_points
 from boardserver import server

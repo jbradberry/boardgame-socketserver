@@ -1,8 +1,11 @@
+from __future__ import absolute_import
+from __future__ import print_function
 import json
 import random
 import sys
 
 import gevent, gevent.local, gevent.queue, gevent.server
+from six.moves import range
 
 
 class Server(object):
@@ -13,7 +16,7 @@ class Server(object):
         self.server = None
         # player message queues
         self.players = dict((x, gevent.queue.Queue())
-                            for x in xrange(1, self.board.num_players+1))
+                            for x in range(1, self.board.num_players+1))
         # random player selection
         self.player_numbers = gevent.queue.JoinableQueue()
 
@@ -30,7 +33,7 @@ class Server(object):
             # update all players with the starting state
             state = self.board.to_json_state(state)
             # board = self.board.get_description()
-            for x in xrange(1, self.board.num_players+1):
+            for x in range(1, self.board.num_players+1):
                 self.players[x].put_nowait({
                     'type': 'update',
                     'board': None,  # board,
@@ -38,7 +41,7 @@ class Server(object):
                 })
 
             # randomize the player selection
-            players = range(1, self.board.num_players+1)
+            players = list(range(1, self.board.num_players+1))
             random.shuffle(players)
             for p in players:
                 self.player_numbers.put_nowait(p)
@@ -50,7 +53,7 @@ class Server(object):
         game = gevent.spawn(self.game_reset)
         self.server = gevent.server.StreamServer((self.addr, self.port),
                                                  self.connection)
-        print "Starting server..."
+        print("Starting server...")
         self.server.serve_forever()
 
         # FIXME: need a way of nicely shutting down.
@@ -58,7 +61,7 @@ class Server(object):
         # self.server.stop()
 
     def connection(self, socket, address):
-        print "connection:", socket
+        print("connection:", socket)
         self.local.socket = socket
         if self.player_numbers.empty():
             self.send({
@@ -81,12 +84,12 @@ class Server(object):
                 elif data.get('state', {}).get('player') == self.local.player:
                     message = ''
                     while not message.endswith('\r\n'):
-                        message += socket.recv(4096)
+                        message += socket.recv(4096).decode('utf-8')
                     messages = message.rstrip().split('\r\n')
                     self.parse(messages[0]) # FIXME: support for multiple messages
                                             #        or out-of-band requests
             except Exception as e:
-                print e
+                print(e)
                 socket.close()
                 self.player_numbers.put_nowait(self.local.player)
                 self.players[self.local.player].put_nowait(data)
@@ -130,8 +133,8 @@ class Server(object):
             data['winners'] = self.board.win_values(self.states[-1])
             data['points'] = self.board.points_values(self.states[-1])
 
-        for x in xrange(1, self.board.num_players+1):
+        for x in range(1, self.board.num_players+1):
             self.players[x].put(data)
 
     def send(self, data):
-        self.local.socket.sendall("{0}\r\n".format(json.dumps(data)))
+        self.local.socket.sendall("{0}\r\n".format(json.dumps(data)).encode('utf-8'))

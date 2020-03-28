@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from setuptools import setup
 
 setup(
@@ -8,7 +9,7 @@ setup(
     packages=['boardserver'],
     scripts=['bin/board-serve.py'],
     entry_points={'jrb_board.games': []},
-    install_requires=['gevent'],
+    install_requires=['gevent', 'six'],
     license='LICENSE',
     description="A generic board game socket server.",
 )
