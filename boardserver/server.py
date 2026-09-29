@@ -3,7 +3,6 @@ import random
 import sys
 
 import gevent, gevent.local, gevent.queue, gevent.server
-from six.moves import range
 
 
 class Server(object):
