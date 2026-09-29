@@ -1,0 +1,32 @@
+[project]
+name = "BoardServer"
+version = "0.2dev"
+requires-python = ">= 3.8"
+dependencies = [
+  "gevent",
+]
+authors = [
+  {name = "Jeff Bradberry", email = "jeff.bradberry@gmail.com"},
+]
+description = "A generic board game socket server."
+readme = "README.rst"
+license = "MIT"
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+]
+
+[project.entry-points."jrb_board.games"]
+
+[project.scripts]
+board-serve = "boardserver.board_serve:main"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["boardserver"]
