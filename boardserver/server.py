@@ -5,7 +5,7 @@ import sys
 import gevent, gevent.local, gevent.queue, gevent.server
 
 
-class Server(object):
+class Server:
     def __init__(self, board, addr=None, port=None):
         self.board = board
         self.states = []
