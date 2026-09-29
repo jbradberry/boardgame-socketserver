@@ -1,13 +1,11 @@
 #!/usr/bin/env python
+from importlib.metadata import entry_points
 import sys
-from pkg_resources import iter_entry_points
+
 from boardserver import server
 
 
-board_plugins = dict(
-    (ep.name, ep.load())
-    for ep in iter_entry_points('jrb_board.games')
-)
+board_plugins = {ep.name: ep.load() for ep in entry_points(group='jrb_board.games')}
 
 
 args = sys.argv[1:]
