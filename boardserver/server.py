@@ -12,8 +12,7 @@ class Server:
         self.local = gevent.local.local()
         self.server = None
         # player message queues
-        self.players = dict((x, gevent.queue.Queue())
-                            for x in range(1, self.board.num_players+1))
+        self.players = {x: gevent.queue.Queue() for x in range(1, self.board.num_players+1)}
         # random player selection
         self.player_numbers = gevent.queue.JoinableQueue()
 
@@ -48,8 +47,7 @@ class Server:
 
     def run(self):
         game = gevent.spawn(self.game_reset)
-        self.server = gevent.server.StreamServer((self.addr, self.port),
-                                                 self.connection)
+        self.server = gevent.server.StreamServer((self.addr, self.port), self.connection)
         print("Starting server...")
         self.server.serve_forever()
 
@@ -61,9 +59,7 @@ class Server:
         print("connection:", socket)
         self.local.socket = socket
         if self.player_numbers.empty():
-            self.send({
-                'type': 'decline', 'message': "Game in progress."
-            })
+            self.send({'type': 'decline', 'message': "Game in progress."})
             socket.close()
             return
 
@@ -100,16 +96,12 @@ class Server:
                 raise Exception
             self.handle_action(data)
         except Exception:
-            self.players[self.local.player].put({
-                'type': 'error', 'message': msg
-            })
+            self.players[self.local.player].put({'type': 'error', 'message': msg})
 
     def handle_action(self, data):
         action = self.board.to_compact_action(data['message'])
         if not self.board.is_legal(self.states[-1], action):
-            self.players[self.local.player].put({
-                'type': 'illegal', 'message': data['message'],
-            })
+            self.players[self.local.player].put({'type': 'illegal', 'message': data['message']})
             return
 
         self.states.append(self.board.next_state(self.states, action))
