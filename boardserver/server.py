@@ -134,4 +134,4 @@ class Server:
             self.players[x].put(data)
 
     def send(self, data):
-        self.local.socket.sendall("{0}\r\n".format(json.dumps(data)).encode('utf-8'))
+        self.local.socket.sendall(f"{json.dumps(data)}\r\n".encode('utf-8'))
