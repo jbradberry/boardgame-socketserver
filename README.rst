@@ -13,9 +13,8 @@ Carlo Tree Search implementation `jbradberry/mcts
 Requirements
 ------------
 
-* Python 2.7, 3.5+; PyPy is not supported by the server
+* Python 3.10+; PyPy is not supported by the server
 * gevent
-* six
 
 
 Getting Started
@@ -37,24 +36,24 @@ or from github, ::
 To run the server with (for example) `Ultimate Tic Tac Toe
 <https://github.com/jbradberry/ultimate_tictactoe>`_ ::
 
-    $ board-serve.py t3
+    $ board-serve t3
 
 Optionally, the server ip address and port number can be added ::
 
-    $ board-serve.py t3 0.0.0.0
-    $ board-serve.py t3 0.0.0.0 8000
+    $ board-serve t3 0.0.0.0
+    $ board-serve t3 0.0.0.0 8000
 
 To connect a client as a human player, using `boardgame-socketplayer
 <https://github.com/jbradberry/boardgame-socketplayer>`_ ::
 
-    $ board-play.py t3 human
-    $ board-play.py t3 human 192.168.1.1 8000   # with ip addr and port
+    $ board-play t3 human
+    $ board-play t3 human 192.168.1.1 8000   # with ip addr and port
 
 To connect a client using one of the compatible `Monte Carlo Tree
 Search AI <https://github.com/jbradberry/mcts>`_ players ::
 
-    $ board-play.py t3 jrb.mcts.uct    # number of wins metric
-    $ board-play.py t3 jrb.mcts.uctv   # point value of the board metric
+    $ board-play t3 jrb.mcts.uct    # number of wins metric
+    $ board-play t3 jrb.mcts.uctv   # point value of the board metric
 
 
 Games
