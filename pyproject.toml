@@ -1,7 +1,7 @@
 [project]
 name = "BoardServer"
 version = "0.2dev"
-requires-python = ">= 3.8"
+requires-python = ">= 3.10"
 dependencies = [
   "gevent",
 ]
@@ -14,9 +14,12 @@ license = "MIT"
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.8",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3.15",
 ]
 
 [project.entry-points."jrb_board.games"]
